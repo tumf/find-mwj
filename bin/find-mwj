@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+=begin
+売買代金上位300銘柄について、ヤフー掲示板の1ページにジョウダン氏が居るか探す
+
+* 冗談です間違っても実行しないでください
+
+=end
+
+require "rubygems"
+require "bundler/setup"
+require 'stocktrade'; include StockTrade
+require 'stocktrade/clicksec/position'
+require "stocktrade/yahoo/ranking"
+require "mechanize"
+require "kconv"
+SUBJECT=/ミ(サイル・ワル|ハイル)・ジョウダン/
+PAGES=20
+agent = Mechanize.new
+
+def url code
+  "http://messages.yahoo.co.jp/bbs?action=q&board=#{code}"
+end
+
+StockTrade::Yahoo::Ranking.new { |ranking|
+  ranking.get("売買代金上位",PAGES).each { |code|
+    agent.get(url(code)) { |page|
+      sleep 1
+      page.search("tr").select { |tr|
+        /action=m/ =~ tr.to_s
+      }.compact.each {|tr|
+        if SUBJECT =~ tr.at("table small").to_s.toutf8
+          puts "find at #{code}"
+          exit 0 # これは絶対外さないこと
+          ClickSec::Position.new { |pos|
+            stock = Yahoo::Stock.new(code)
+            num = stock.unit unless num
+            puts "BUY #{code} #{stock.name}"
+            pos.buy(code)
+            pos.logout
+          }
+          exit 0
+        end
+      }
+    }
+  }
+}
+exit 0
+
+
