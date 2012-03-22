@@ -5,6 +5,9 @@
 * 動作確認してないです
 * 使い方によっては危険です
 
+これみて勢いでつくりました
+> http://kabumatome.doorblog.jp/archives/65657994.html
+
 ## 内容物
 
     ./bin/find-mwj
